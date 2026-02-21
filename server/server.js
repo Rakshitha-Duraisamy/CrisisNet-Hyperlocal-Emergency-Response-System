@@ -26,7 +26,12 @@ app.use((req, res, next) => {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors(
+  {
+    origin:"http://localhost:4028",
+    credentials:true,
+  }
+));
 app.use(express.json());
 
 // Routes

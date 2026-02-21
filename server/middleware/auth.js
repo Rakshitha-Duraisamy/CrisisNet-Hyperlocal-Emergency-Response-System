@@ -13,6 +13,8 @@ const protect = async (req, res, next) => {
   }
 
   try {
+    console.log("Token received:", token);
+    console.log("JWT Secret:", process.env.JWT_SECRET);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id).select('-password');
     if (!req.user) {
@@ -30,5 +32,6 @@ const authorize = (...roles) => (req, res, next) => {
   }
   next();
 };
+
 
 module.exports = { protect, authorize };

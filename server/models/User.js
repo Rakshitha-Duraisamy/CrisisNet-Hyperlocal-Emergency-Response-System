@@ -14,8 +14,13 @@ const userSchema = new mongoose.Schema({
   skills: [String], // e.g. ['medical', 'fire', 'rescue']
   isAvailable: { type: Boolean, default: true },
   location: {
-    type: { type: String, default: 'Point' },
-    coordinates: [Number], // [longitude, latitude]
+  type: {
+    type: String,
+    enum: ['Point']
+  },
+  coordinates: {
+    type: [Number]
+  }
   },
   rating: { type: Number, default: 5.0 },
   totalResponses: { type: Number, default: 0 },
@@ -24,7 +29,7 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Index for geospatial queries
-userSchema.index({ location: '2dsphere' });
+userSchema.index({ location: '2dsphere' }, { sparse: true });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

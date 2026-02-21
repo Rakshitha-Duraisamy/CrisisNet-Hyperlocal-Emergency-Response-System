@@ -6,20 +6,36 @@ const { protect } = require('../middleware/auth');
 const router = express.Router();
 
 // Generate JWT
-const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+const generateToken = (id) => {
+  return jwt.sign(
+    { id },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+  );
+};
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, phone, password, role, skills } = req.body;
+    const { name, email, phone, password, role, skills, latitude, longitude } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ success: false, message: 'Email already registered' });
     }
 
-    const user = await User.create({ name, email, phone, password, role, skills });
+    // Build user object safely
+    const userData = { name, email, phone, password, role, skills };
+
+    // Only add location if coordinates exist
+    if (latitude && longitude) {
+      userData.location = {
+        type: 'Point',
+        coordinates: [parseFloat(longitude), parseFloat(latitude)]
+      };
+    }
+
+    const user = await User.create(userData);
     const token = generateToken(user._id);
 
     res.status(201).json({
